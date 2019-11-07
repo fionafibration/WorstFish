@@ -9,8 +9,9 @@ DoneOpening = 3
 
 
 class WorstFish:
-    def __init__(self):
-        self.engine = chess.engine.SimpleEngine.popen_uci("./stockfish-10-win/Windows/stockfish_10_x64_bmi2.exe")
+    def __init__(self, engine):
+        #self.engine = chess.engine.SimpleEngine.popen_uci("./stockfish-10-win/Windows/stockfish_10_x64_bmi2.exe")
+        self.engine = engine
         self.opening_status = NotOpening
         self.opening_type = None
 
@@ -21,7 +22,7 @@ class WorstFish:
 
         for move in board.legal_moves:
             board.push(move)
-            board_score = self.engine.analyse(board, chess.engine.Limit(time=0.2), info=chess.engine.INFO_ALL)
+            board_score = self.engine.analyse(board, chess.engine.Limit(time=0.75), info=chess.engine.INFO_ALL)
             move_scores[move] = board_score["score"].white()
             board.pop()
 
@@ -50,7 +51,6 @@ class WorstFish:
             if move in board.legal_moves:
                 return move
             else:
-                print("Move %s failed!" % move)
                 return self._get_worst_move(board)
 
     def get_move(self, board=None):
@@ -67,16 +67,11 @@ class WorstFish:
                     list(black_player_openings.values())
                 )
 
-                print(self.opening_type)
-
         if self.opening_status == Opening:
             return self._get_opening_move(board)
 
         else:
             return self._get_worst_move(board)
-
-    def close(self):
-        self.engine.kill()
 
 
 # Openings starting from white
@@ -108,34 +103,3 @@ black_player_openings = {
     'stupid f3 reverse': 'g1f3 f7f6 e2e4 e8f7 d2d4 f7e6',
     'reverse fools': 'b1c3 f7f6 e2e4 g7g5 d1h5'
 }
-
-
-def main():
-    wf = WorstFish()
-
-    board = chess.Board()
-    while not board.is_game_over():
-        print(str(board))
-        print('Turn: %s' % ('White' if board.turn else 'Black'))
-        print()
-
-        if board.turn:
-            bad_move = wf.get_move(board)
-        else:
-            bad_move = chess.Move.from_uci(input())
-        if bad_move in board.legal_moves:
-            board.push(bad_move)
-        else:
-            print("Invalid move")
-            continue
-
-        print("%s plays %s" % ('White' if not board.turn else 'Black', bad_move))
-
-
-    print(board)
-    print(board.result())
-
-
-if __name__ == '__main__':
-    # asyncio.run(main())
-    main()
