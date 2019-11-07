@@ -1,9 +1,7 @@
 import chess
 import chess.engine
-import asyncio
-import sys
 import random
-from chess import WHITE, BLACK
+from chess import WHITE
 
 NotOpening = 1
 Opening = 2
